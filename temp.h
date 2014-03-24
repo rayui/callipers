@@ -6,6 +6,7 @@
 #define temp_h
 
 #include <Energia.h>
+#include "displayable.h"
 
 #define DEGREES_C 0
 #define DEGREES_F 1
@@ -15,25 +16,28 @@
 #define DEGREES_F_SYMBOL 'F'
 #define DEGREES_K_SYMBOL 'K'
 
-#define TEMP_SAMPLE_SIZE 256  //at a sample rate of 25Hz, this is ~10 seconds of samples
+#define TEMP_SAMPLE_SIZE 1024  //at a sample rate of 25Hz, this is ~10 seconds of samples
 
-template <class Base>
-class Temp : public Base
+class Temp : public Displayable
 {
   public:
-    Temp(EventSequencer* evSeq);
-    int getTempXDPs(int scale, int sigFig);
-    int getTempString(int scale, char *output, int numDigits);
+    Temp();
+    ~Temp();
     void updateReading();
-    void initialize();
-    void printTemp();
+    void initialize(int numDigits, EventSequencer* evSeq);
+    void setDegreesC();
+    void setDegreesF();
+    void setDegreesK();
+    int toString(char* output);
   private:
     long runningTotals[3];
+    unsigned char _scale;
     long latestReading;
+    int getTempXDPs(int scale, int sigFig);
     long voltageToTemp(long voltage, int scale);
-    unsigned char dpMask;
+    unsigned char setDisplayString(int scale);
+    void generateDPMaskFromPosition(int segment);
+    void setScale(unsigned char scale);
 };
-
-#include "temp_impl.h"
 
 #endif

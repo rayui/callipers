@@ -8,8 +8,8 @@
 #define Event_h
 
 #include <Energia.h>
+
 #include "list.h"
-using namespace std;
 
 enum EventType {
   EVT_NULL, EVT_BTN_CLICK, EVT_BTN_DBL_CLICK
@@ -17,15 +17,13 @@ enum EventType {
 
 struct abstractCallback { 
  virtual void call() = 0;
- virtual ~abstractCallback() {
-
- }
+ virtual ~abstractCallback() {}
 };
 
 //see here for example
 //http://stackoverflow.com/questions/3381829/how-do-i-implement-a-callback-in-c
 template <typename Destination>
-struct EventableCallback {
+struct EventableCallback : public abstractCallback {
  virtual void call() {((*destination).*member)(); }
  void (Destination::*member)();
  Destination *destination;
@@ -44,9 +42,8 @@ struct Event {
 };
 
 struct Subscription {
-  template <class T>
-  void addCallback(T cb) {
-    callback = (abstractCallback*)cb;
+  void addCallback(abstractCallback* cb) {
+    callback = cb;
   }
   abstractCallback* callback;
   EventType type;
@@ -63,6 +60,7 @@ class EventSequencer {
   public:
     EventSequencer(void);
     ~EventSequencer(void);
+    void initialize(void);
     template <class Source, class Destination>
     void bind(Source* source, EventType type, void (Destination::*cb)(), Destination* destination);
       //creates a subscription object and pushes it into the subscription list
@@ -73,15 +71,16 @@ class EventSequencer {
       //creates an event object and adds into the event list
     void consumeEvents();
   private:
-    List<Subscription>* _subscriptions;
-    List<Event>* _events;
+    List<Subscription> _subscriptions;
+    List<Event> _events;
     int _newSubscriptionId;
 };
 
 class Eventable {
   public:
-    Eventable(EventSequencer* evSeq);
+    Eventable();
     ~Eventable(void);
+    void initialize(EventSequencer* evSeq);
     template <class Destination>
     void bind(EventType type, void (Destination::*cb)(), Destination* destination);
     void unbind(EventType type);
@@ -100,11 +99,10 @@ void EventSequencer::bind(Source* source, EventType type, void (Destination::*cb
   
   int subscriptionId = source->getSubscriptionId();
   
-  EventableCallback< Destination >* evCb = new EventableCallback< Destination > (cb, destination);
+  abstractCallback* evCb = new EventableCallback< Destination > (cb, destination);
   
   if (subscriptionId < 0) {
     subscriptionId = _newSubscriptionId;
-    Serial << "Creating new subscription id of " << subscriptionId << "\n";
     source->setSubscriptionId(subscriptionId);
     _newSubscriptionId++;
   }
@@ -113,25 +111,20 @@ void EventSequencer::bind(Source* source, EventType type, void (Destination::*cb
   newSub->id = subscriptionId;
   newSub->type = type;
   newSub->addCallback(evCb);
-  _subscriptions->pushNode(newSub);
-  
-  Serial << "Adding subscription# " << _subscriptions->getLength() << ": " << subscriptionId << " of type " << type << " at pointer " << (int)newSub << "\n";
+  _subscriptions.pushNode(newSub);
   
 }
 
 template <class Source>
 void EventSequencer::unbind(Source* source, EventType type) {
-  Subscription* s = _subscriptions->moveToHead();
+  Subscription* s = _subscriptions.moveToHead();
   
   while(s != 0) {
     if (source->getSubscriptionId() == s->id && type == s->type) {
-      Serial << "GOT ONE: id " << s->id << " type " << s->type << "\n";
-      _subscriptions->spliceCurrent();
+      _subscriptions.spliceCurrent();
     }
-    s = _subscriptions->moveToNext();
+    s = _subscriptions.moveToNext();
   }
-  
-//  _subscriptions->empty();
   
 }
 
@@ -140,7 +133,7 @@ void EventSequencer::trigger(Source* source, EventType type) {
   Event* newEv = new Event;
   newEv->type = type;
   newEv->sourceId = source->getSubscriptionId();
-  _events->pushNode(newEv);
+  _events.pushNode(newEv);
 }
 
 template <class Destination>

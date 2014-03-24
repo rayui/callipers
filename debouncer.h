@@ -12,8 +12,8 @@
 #include "list.h"
 #include "event.h"
 
-#define CTRL_PIN_PRESS LOW
-#define CTRL_PIN_RELEASE HIGH
+#define CTRL_PIN_PRESS HIGH
+#define CTRL_PIN_RELEASE LOW
 
 #define CLICK_BOUNCE_TIME 100
 #define CLICK_TIMEOUT 250
@@ -24,14 +24,11 @@ struct ButtonEvent {
   long time;
 };
 
-template <class Base>
-class Debouncer : public Base {
+class Debouncer : public Eventable {
   public:
-    Debouncer(int pin, EventSequencer* evSeq);
-    ~Debouncer();
+    void initialize(int pin, EventSequencer* evSeq);
     void addEvent(ButtonEvent* e);
     void debounce();
-    void onDoubleClick();
   private:
     List<ButtonEvent>* _events;
     EventSequencer* _evSeq;
@@ -42,7 +39,5 @@ class Debouncer : public Base {
     void _debounce();
     void _triggerPrimaryClick(void);
 };
-
-#include "debouncer_impl.h"
 
 #endif

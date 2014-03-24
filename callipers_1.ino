@@ -1,7 +1,7 @@
+#include <Energia.h>
 #include "event.h"
 #include "debouncer.h"
 #include "leddisplay.h"
-//#include "menu.h"
 #include "temp.h"
 #include "utils.h"
 
@@ -26,48 +26,36 @@
 
 /* control button pin */
 
-#define CTRL_PIN_A 5
+#define CTRL_PIN_A 19
 #define CTRL_PIN_B 18
 
-#define DISPLAY_MODE_DEFAULT  0
-#define DISPLAY_MODE_MENU  1
-
-#define NUM_INTERRUPT_EVENTS 5
-
-long encoderPos = 0;
-int encoderPosLast = LOW;
-
-unsigned char displayMode = DISPLAY_MODE_DEFAULT;
+static long encoderPos = 0;
+static int encoderPosLast = LOW;
 
 /* event sequencer */
 
-EventSequencer* evSeq = 0;
+static EventSequencer evSeq;
 
 /* display handler */
 
-LedDisplay* display = 0;
+static LedDisplay ledDisplay;
 
 /* button monitoring */
 
-Debouncer<Eventable>* debouncerA = 0;
-Debouncer<Eventable>* debouncerB = 0;
+static Debouncer debouncerA;
+static Debouncer debouncerB;
 
-int currentPinVal = 0;
-int lastButtonEventFlag = 0;
-ButtonEvent* lastButtonEvent = 0;
+static int lastButtonEventFlag = 0;
+static ButtonEvent lastButtonEvent;
 
 /* temperature sensor */
 
-Temp<Eventable>* tempSensor = 0;
+static Temp tempSensor;
 
-/* menu */
+static long clockTick = 0;
+static long lastStrobeTick = 0;
 
-//Menu* menu = 0;
-
-long clockTick = 0;
-long lastStrobeTick = 0;
-
-void handleEncoder() {
+static void handleEncoder() {
   if (digitalRead(ENCODER_PIN_B) == LOW) {
     encoderPos--;
   } else {
@@ -75,106 +63,73 @@ void handleEncoder() {
   }
 }
 
-void displayTemperature() {  
-  int dpPosition;
+static const void displayTemperature() {  
   char tempString[NUM_LED_DIGITS + 1];
-  unsigned char scale;
   
-  if (clockTick % 15000 > 10000) {
-    scale = DEGREES_K;
-  } else if (clockTick % 15000 > 5000) {
-    scale = DEGREES_F;
-  } else {
-    scale = DEGREES_C;
-  }
+  tempSensor.toString(tempString);
   
-  dpPosition = tempSensor->getTempString(scale, tempString, NUM_LED_DIGITS);
-  
-  display->setDPMask(LedDisplay::generateDPMaskFromPosition(dpPosition));
-
-  display->strobeString(tempString);
+  ledDisplay.setDPMask(tempSensor.getDPMask());
+  ledDisplay.strobeString(tempString);
 }
 
-void toggleButtonA() {
-  //initialized to rising
-  if (digitalRead(CTRL_PIN_A) != CTRL_PIN_RELEASE) {
-    return;
-  }
-  lastButtonEvent->pin = CTRL_PIN_A;
-  lastButtonEvent->time = millis();
+static void toggleButtonA() {
+  lastButtonEvent.pin = CTRL_PIN_A;
+  lastButtonEvent.time = millis();
   lastButtonEventFlag++;
 }
 
-void toggleButtonB() {
-  //initialized to rising
-  if (digitalRead(CTRL_PIN_B) != CTRL_PIN_RELEASE) {
-    return;
-  }
-  lastButtonEvent->pin = CTRL_PIN_B;
-  lastButtonEvent->time = millis();
+static void toggleButtonB() {
+  lastButtonEvent.pin = CTRL_PIN_B;
+  lastButtonEvent.time = millis();
   lastButtonEventFlag++;
 }
 
-void click() {
-  Serial.println("CLICK"); 
-}
 
-void doubleClick() {
-  Serial.println("DOUBLE CLICK"); 
-}
-
-
-void setupHardware() {
-/*  display = new LedDisplay(LED_PIN_1, LED_PIN_2, LED_PIN_3, LED_PIN_4, SHIFT_ENABLE_PIN, LATCH_PIN, SHIFT_CLEAR_PIN, SHIFT_CLOCK_PIN, DATA_PIN);
-  display->setBrightness(LED_BRIGHT_HI);*/
+static void setupHardware() {
   
-  tempSensor = new Temp<Eventable>(evSeq);
-  tempSensor->initialize();
-  
-/*  pinMode(ENCODER_PIN_A, INPUT);
+  pinMode(ENCODER_PIN_A, INPUT);
   pinMode(ENCODER_PIN_B, INPUT);
 
-  attachInterrupt(ENCODER_PIN_A, handleEncoder, RISING);   //encoder blinked*/
+  attachInterrupt(ENCODER_PIN_A, handleEncoder, RISING);   //encoder blinked
 
-  pinMode(CTRL_PIN_A, INPUT_PULLUP);
-  attachInterrupt(CTRL_PIN_A, &toggleButtonA, RISING);  //should be on button release
+  pinMode(CTRL_PIN_A, INPUT);
+  attachInterrupt(CTRL_PIN_A, &toggleButtonA, FALLING);  //should be on button release
 
-  pinMode(CTRL_PIN_B, INPUT_PULLUP);
-  attachInterrupt(CTRL_PIN_B, &toggleButtonB, CHANGE);
+  pinMode(CTRL_PIN_B, INPUT);
+  attachInterrupt(CTRL_PIN_B, &toggleButtonB, FALLING);
   
   
 }
 
 void setup()
 {
-  evSeq = new EventSequencer();
-  debouncerA = new Debouncer<Eventable>(CTRL_PIN_A, evSeq);
-  debouncerB = new Debouncer<Eventable>(CTRL_PIN_B, evSeq);
-  
-  Serial.begin(4800); 
-  
-  Serial << "STARTING HERE\n\n\n\n\n";
-
-  setupHardware();
-
-/*  menu = new Menu;
-  menu->initialize();*/
-
-  lastButtonEvent = new ButtonEvent;
   lastButtonEventFlag = 0;
-
-  debouncerA->bind(EVT_BTN_CLICK, &Temp<Eventable>::printTemp, tempSensor);
-  debouncerA->bind(EVT_BTN_DBL_CLICK, &Debouncer<Eventable>::onDoubleClick, debouncerA);
+  setupHardware();
   
-  Serial.println("done setup\n\n\n");
+  evSeq.initialize();
+  ledDisplay.initialize(LED_PIN_1, LED_PIN_2, LED_PIN_3, LED_PIN_4, SHIFT_ENABLE_PIN, LATCH_PIN, SHIFT_CLEAR_PIN, SHIFT_CLOCK_PIN, DATA_PIN);
+  debouncerA.initialize(CTRL_PIN_A, &evSeq);
+  debouncerB.initialize(CTRL_PIN_B, &evSeq);
+  tempSensor.initialize(NUM_LED_DIGITS, &evSeq);
+  
+  ledDisplay.setBrightness(LED_BRIGHT_HI);
+  tempSensor.setDegreesC();
 
+  debouncerA.bind(EVT_BTN_CLICK, &Temp::setDegreesC, &tempSensor);
+  debouncerB.bind(EVT_BTN_CLICK, &Temp::setDegreesF, &tempSensor);
+  
 }
 
 void loop()
 {
   
   if (lastButtonEventFlag != 0) {
-    debouncerA->addEvent(lastButtonEvent);
+    if (lastButtonEvent.pin == CTRL_PIN_A) {
+      debouncerA.addEvent(&lastButtonEvent);      
+    } else {
+      debouncerB.addEvent(&lastButtonEvent);
+    }
+
     lastButtonEventFlag = 0;
   }
   
@@ -182,11 +137,14 @@ void loop()
 
   if (clockTick - lastStrobeTick > LED_STROBE_INTERVAL_MS) {
     
-    debouncerA->debounce();
+    debouncerA.debounce();
+    debouncerB.debounce();
     
-    tempSensor->updateReading();
+    tempSensor.updateReading();
     
-    evSeq->consumeEvents();
+    displayTemperature();
+    
+    evSeq.consumeEvents();
     
     lastStrobeTick = clockTick;
 

@@ -10,12 +10,19 @@ F = (A * 48724 - 30634388) >> 16
 */
 
 #include "utils.h"
+#include "temp.h"
 
-template <class Base> Temp<Base>::Temp(EventSequencer *evSeq) : Base(evSeq) {
+Temp::Temp() : Displayable() {
 
 }
 
-template <class Base> void Temp<Base>::initialize() {
+Temp::~Temp() {
+
+}
+
+void Temp::initialize(int numDigits, EventSequencer* evSeq) {
+  Displayable::initialize(numDigits, evSeq);
+  _scale = DEGREES_C;
   latestReading = 0;
   analogReference(INTERNAL1V5);
   runningTotals[DEGREES_C] = 0;
@@ -36,10 +43,28 @@ template <class Base> void Temp<Base>::initialize() {
   }
 }
 
+int Temp::toString(char* output) {
+  int numDigits = setDisplayString(_scale);
+  Displayable::toString(output);
+  return numDigits;
+}
+
+void Temp::setDegreesC() {
+  setScale(DEGREES_C);
+}
+
+void Temp::setDegreesF() {
+  setScale(DEGREES_F);  
+}
+
+void Temp::setDegreesK() {
+  setScale(DEGREES_K);
+}
+
 //see here for the algorithm:
 //http://forum.43oh.com/topic/1954-using-the-internal-temperature-sensor/#entry16834
 
-template <class Base> long Temp<Base>::voltageToTemp(long voltage, int scale) {
+long Temp::voltageToTemp(long voltage, int scale) {
   long temp = 0;
   
   if (scale == DEGREES_F) {
@@ -54,13 +79,13 @@ template <class Base> long Temp<Base>::voltageToTemp(long voltage, int scale) {
   return temp;
 }
 
-template <class Base> int Temp<Base>::getTempXDPs(int scale, int numDPs) {
+int Temp::getTempXDPs(int scale, int numDPs) {
   long multipler = Utils::power(10, numDPs);
-  long temp = (multipler * runningTotals[scale]) >> 8;  //256 = 2^8
+  long temp = (multipler * runningTotals[scale]) >> 10;  //1024 = 2^10
   return temp;
 }
 
-template <class Base> int Temp<Base>::getTempString(int scale, char *output, int numDigits) {
+unsigned char Temp::setDisplayString(int scale) {
 
   //we can think about numDigits as number of significant figures
   //we are always going to have 2 decimal places, some of which will eventually be cropped off to fit on the display
@@ -72,15 +97,15 @@ template <class Base> int Temp<Base>::getTempString(int scale, char *output, int
   int temp = getTempXDPs(scale, 2);
   int dpPosition = -1;
   
-  if (scale == DEGREES_K) {
+  if (_scale == DEGREES_K) {
     scaleSymbol = DEGREES_K_SYMBOL;
-  } else if (scale == DEGREES_F) {
+  } else if (_scale == DEGREES_F) {
     scaleSymbol = DEGREES_F_SYMBOL;
   }
   
   //we turn it into a string and find the end
-  itoa(temp, output, 10);
-  while(output[i] != 0) {
+  itoa(temp, _displayString, 10);
+  while(_displayString[i] != 0) {
     i++;
   }
   
@@ -89,31 +114,35 @@ template <class Base> int Temp<Base>::getTempString(int scale, char *output, int
   }
   
   //and replace the last character with the symbol
-  output[numDigits - 1] = scaleSymbol;
-  output[numDigits] = 0;
+  _displayString[_numDigits - 1] = scaleSymbol;
+  _displayString[_numDigits] = 0;
   
   //we return the position of the decimal point
   //if it's < 0 there is no decimal point
-  return dpPosition;
+  generateDPMaskFromPosition(dpPosition);
   
+  return dpMask;
 }
 
-template <class Base> void Temp<Base>::updateReading() {
+void Temp::updateReading() {
   
   latestReading = (long)analogRead(TEMPSENSOR);  //get latest reading
 
   for (int j = 3; j--; j > 0) {
-    runningTotals[j] -= (runningTotals[j] >> 8);  //subtract average from running total. 256 = 2^8
+    runningTotals[j] -= (runningTotals[j] >> 10);  //subtract average from running total. 1024 = 2^10
     runningTotals[j] += voltageToTemp(latestReading, j);  //add latest reading
   }
   
 }
 
-template <class Base> void Temp<Base>::printTemp() {
-  int dpPosition;
-  char tempString[11];
-  
-  dpPosition = getTempString(DEGREES_C, tempString, 5);
-  
-  Serial << "TEMPERATURE IS: " << tempString << "\n";  
+void Temp::generateDPMaskFromPosition(int segment) {
+  if (segment < 0) {
+    dpMask = 0;
+  } else {
+    dpMask = 1 << segment;
+  }
+}
+
+void Temp::setScale(unsigned char scale) {
+  _scale = scale;
 }

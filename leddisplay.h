@@ -43,7 +43,8 @@ The digit zero, for example would be represented as B11011110
 class LedDisplay
 {
   public:
-    LedDisplay(
+    LedDisplay();
+    void initialize (
       unsigned char digit1Pin,
       unsigned char digit2Pin,
       unsigned char digit3Pin,
@@ -64,7 +65,7 @@ class LedDisplay
     void setDPMask(unsigned char dpMask);
     static unsigned char generateDPMaskFromPosition(int pin);
   private:
-    static unsigned char characterMap[];
+    const static unsigned char characterMap[];
     static unsigned char mapSize;
     unsigned char _digitPins[NUM_LED_DIGITS];
     unsigned char _shiftEnablePin;

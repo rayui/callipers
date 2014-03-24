@@ -1,7 +1,7 @@
 #include "leddisplay.h"
 #include "utils.h"
 
-unsigned char LedDisplay::characterMap[] = {
+const unsigned char LedDisplay::characterMap[] = {
   B00000000,  //blank
   B00010000,  //bottom line
   B00100000,  //middle line
@@ -53,7 +53,9 @@ unsigned char LedDisplay::mapSize = sizeof(characterMap) / sizeof(unsigned char)
 /* Constructor
 /*************************************/
 
-LedDisplay::LedDisplay(unsigned char digit1Pin, unsigned char digit2Pin, unsigned char digit3Pin, unsigned char digit4Pin, unsigned char shiftEnablePin, unsigned char latchPin, unsigned char shiftClearPin, unsigned char shiftClockPin, unsigned char shiftDataPin) {
+LedDisplay::LedDisplay() {};
+
+void LedDisplay::initialize(unsigned char digit1Pin, unsigned char digit2Pin, unsigned char digit3Pin, unsigned char digit4Pin, unsigned char shiftEnablePin, unsigned char latchPin, unsigned char shiftClearPin, unsigned char shiftClockPin, unsigned char shiftDataPin) {
  
   _digitPins[0] = digit1Pin;
   _digitPins[1] = digit2Pin;
@@ -64,7 +66,7 @@ LedDisplay::LedDisplay(unsigned char digit1Pin, unsigned char digit2Pin, unsigne
   _shiftClearPin = shiftClearPin;
   _shiftClockPin = shiftClockPin;
   _shiftDataPin = shiftDataPin;
-  _brightness = LED_BRIGHT_MED;
+  _brightness = LED_BRIGHT_HI;
   
   pinMode(_digitPins[0], OUTPUT);
   pinMode(_digitPins[1], OUTPUT);
@@ -225,7 +227,7 @@ void LedDisplay::setDPMask(unsigned char dpMask) {
 
 unsigned char LedDisplay::generateDPMaskFromPosition(int segment) {
   if (segment < 0) {
-    return 0; 
+    return 0;
   }
   return 1 << segment;
 }
