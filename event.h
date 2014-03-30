@@ -72,6 +72,7 @@ class EventSequencer {
     void consumeEvents();
     void clearEvents();
     void clearSubscriptions();
+    int getNumSubscriptions();
     void enable();
     void disable();
   private:

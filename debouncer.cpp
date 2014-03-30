@@ -8,7 +8,7 @@ void Debouncer::initialize (int pin, EventSequencer* evSeq) {
   _primaryClickFlag = 0;
 }
 
-void Debouncer::_addEvent(ButtonEvent* event) {
+void Debouncer::_addEvent(volatile ButtonEvent* event) {
   ButtonEvent* e = new ButtonEvent;
   e->pin = event->pin;
   e->time = event->time;
@@ -45,7 +45,7 @@ void Debouncer::_debounce() {
   
 }
 
-void Debouncer::addEvent(ButtonEvent* event) {
+void Debouncer::addEvent(volatile ButtonEvent* event) {
   if (event != 0) {
     _addEvent(event);
   }
