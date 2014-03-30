@@ -41,6 +41,9 @@ void Temp::initialize(int numDigits, EventSequencer* evSeq) {
     }
     delay(1);
   }
+  
+  setDegreesC();
+  
 }
 
 int Temp::toString(char* output) {
@@ -119,9 +122,8 @@ unsigned char Temp::setDisplayString(int scale) {
   
   //we return the position of the decimal point
   //if it's < 0 there is no decimal point
-  generateDPMaskFromPosition(dpPosition);
   
-  return dpMask;
+  return generateDPMask(dpPosition);
 }
 
 void Temp::updateReading() {
@@ -135,12 +137,24 @@ void Temp::updateReading() {
   
 }
 
-void Temp::generateDPMaskFromPosition(int segment) {
+void Temp::toggleScale() {
+  if (_scale == DEGREES_C) {
+    setDegreesF();
+  } else if (_scale == DEGREES_F) {
+    setDegreesK();
+  } else {
+    setDegreesC();
+  } 
+}
+
+unsigned char Temp::generateDPMask(int segment) {
   if (segment < 0) {
     dpMask = 0;
   } else {
     dpMask = 1 << segment;
   }
+  
+  return dpMask;
 }
 
 void Temp::setScale(unsigned char scale) {

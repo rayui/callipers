@@ -1,8 +1,8 @@
 #include <Energia.h>
 #include "event.h"
 #include "debouncer.h"
-#include "leddisplay.h"
-#include "temp.h"
+#include "seven_segment_led.h"
+#include "displayable_manager.h"
 #include "utils.h"
 
 #define LED_STROBE_INTERVAL_MS 20 //milliseconds
@@ -32,13 +32,15 @@
 static long encoderPos = 0;
 static int encoderPosLast = LOW;
 
+char displayString[NUM_LED_DIGITS + 1];
+
 /* event sequencer */
 
 static EventSequencer evSeq;
 
 /* display handler */
 
-static LedDisplay ledDisplay;
+static SevenSegmentLED ledDisplay;
 
 /* button monitoring */
 
@@ -48,9 +50,7 @@ static Debouncer debouncerB;
 static int lastButtonEventFlag = 0;
 static ButtonEvent lastButtonEvent;
 
-/* temperature sensor */
-
-static Temp tempSensor;
+static DisplayableManager displayManager;
 
 static long clockTick = 0;
 static long lastStrobeTick = 0;
@@ -61,15 +61,6 @@ static void handleEncoder() {
   } else {
     encoderPos++;
   }
-}
-
-static const void displayTemperature() {  
-  char tempString[NUM_LED_DIGITS + 1];
-  
-  tempSensor.toString(tempString);
-  
-  ledDisplay.setDPMask(tempSensor.getDPMask());
-  ledDisplay.strobeString(tempString);
 }
 
 static void toggleButtonA() {
@@ -103,20 +94,34 @@ static void setupHardware() {
 
 void setup()
 {
+  Displayable* _tmp;
+  
   lastButtonEventFlag = 0;
   setupHardware();
   
   evSeq.initialize();
-  ledDisplay.initialize(LED_PIN_1, LED_PIN_2, LED_PIN_3, LED_PIN_4, SHIFT_ENABLE_PIN, LATCH_PIN, SHIFT_CLEAR_PIN, SHIFT_CLOCK_PIN, DATA_PIN);
+  ledDisplay.initialize(LED_PIN_1, LED_PIN_2, LED_PIN_3, LED_PIN_4, SHIFT_ENABLE_PIN, LATCH_PIN, SHIFT_CLEAR_PIN, SHIFT_CLOCK_PIN, DATA_PIN, LED_STROBE_INTERVAL_MS);
   debouncerA.initialize(CTRL_PIN_A, &evSeq);
   debouncerB.initialize(CTRL_PIN_B, &evSeq);
-  tempSensor.initialize(NUM_LED_DIGITS, &evSeq);
+  displayManager.initialize(&evSeq);
   
-  ledDisplay.setBrightness(LED_BRIGHT_HI);
-  tempSensor.setDegreesC();
+  //the following code contains a memroy leak
+  
+/*  _tmp = new Temp();
+  ((Temp*)_tmp)->initialize(NUM_LED_DIGITS, &evSeq);
+  _tmp->bind(EVT_SECOND_TICK, &Temp::updateReading);
+  _tmp->bind(EVT_BTN_CLICK, &Temp::toggleScale);
+  _tmp->unbind(EVT_BTN_CLICK);
+  _tmp->unbind(EVT_SECOND_TICK);
+  delete _tmp;*/
 
-  debouncerA.bind(EVT_BTN_CLICK, &Temp::setDegreesC, &tempSensor);
-  debouncerB.bind(EVT_BTN_CLICK, &Temp::setDegreesF, &tempSensor);
+  
+  displayManager.loadTemp();
+  displayManager.bind(EVT_BTN_DBL_CLICK, &DisplayableManager::loadNextApp);
+      
+  ledDisplay.setBrightness(LED_BRIGHT_HI);
+  
+
   
 }
 
@@ -135,18 +140,19 @@ void loop()
   
   clockTick = millis();
 
-  if (clockTick - lastStrobeTick > LED_STROBE_INTERVAL_MS) {
+  if (clockTick - lastStrobeTick > ledDisplay.getStrobeRate()) {
     
     debouncerA.debounce();
     debouncerB.debounce();
     
-    tempSensor.updateReading();
-    
-    displayTemperature();
-    
     evSeq.consumeEvents();
     
+    displayManager.toString(displayString);
+    ledDisplay.setDPMask(displayManager.getDPMask());
+    ledDisplay.strobeString(displayString);
+    
     lastStrobeTick = clockTick;
+    debouncerA.trigger(EVT_SECOND_TICK);
 
   }
   

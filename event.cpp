@@ -15,12 +15,17 @@ EventSequencer::~EventSequencer () {
 
 void EventSequencer::initialize () {
   _newSubscriptionId = 0;
+  _enabled = 1;
 }
 
 void EventSequencer::consumeEvents() {
   Event *e = _events.moveToHead();
   Subscription *s = _subscriptions.moveToHead();
   int i = 0;
+  
+  if (_enabled == 0) {
+    return;
+  }
   
   if (e == 0) {
     return;
@@ -36,8 +41,9 @@ void EventSequencer::consumeEvents() {
     s = _subscriptions.moveToHead();
     //loop through the list of subscriptions for all matching this event type
     while (s != 0) {
-      //if event source id and types match, call callback
-      if (e->type == s->type && s->id == e->sourceId) {
+      //if types match, call callback
+//      if (e->type == s->type && s->id == e->sourceId) {
+      if (e->type == s->type) {
         s->callback->call();
       }
       s = _subscriptions.moveToNext();
@@ -48,10 +54,25 @@ void EventSequencer::consumeEvents() {
   }
   
   //delete all events
-  _events.empty(); 
+  clearEvents(); 
   
 }
 
+void EventSequencer::clearEvents() {
+  _events.empty(); 
+}
+
+void EventSequencer::clearSubscriptions() {
+  _subscriptions.empty(); 
+}
+
+void EventSequencer::enable() {
+  _enabled = 1;
+}
+
+void EventSequencer::disable() {
+  _enabled = 0;  
+}
 
 /*************************************/
 /* Eventable

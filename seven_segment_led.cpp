@@ -1,7 +1,7 @@
-#include "leddisplay.h"
+#include "seven_segment_led.h"
 #include "utils.h"
 
-const unsigned char LedDisplay::characterMap[] = {
+const unsigned char SevenSegmentLED::characterMap[] = {
   B00000000,  //blank
   B00010000,  //bottom line
   B00100000,  //middle line
@@ -47,15 +47,15 @@ const unsigned char LedDisplay::characterMap[] = {
   B01111010   //Z
 };
 
-unsigned char LedDisplay::mapSize = sizeof(characterMap) / sizeof(unsigned char);
+unsigned char SevenSegmentLED::mapSize = sizeof(characterMap) / sizeof(unsigned char);
 
 /*************************************/
 /* Constructor
 /*************************************/
 
-LedDisplay::LedDisplay() {};
+SevenSegmentLED::SevenSegmentLED() {};
 
-void LedDisplay::initialize(unsigned char digit1Pin, unsigned char digit2Pin, unsigned char digit3Pin, unsigned char digit4Pin, unsigned char shiftEnablePin, unsigned char latchPin, unsigned char shiftClearPin, unsigned char shiftClockPin, unsigned char shiftDataPin) {
+void SevenSegmentLED::initialize(unsigned char digit1Pin, unsigned char digit2Pin, unsigned char digit3Pin, unsigned char digit4Pin, unsigned char shiftEnablePin, unsigned char latchPin, unsigned char shiftClearPin, unsigned char shiftClockPin, unsigned char shiftDataPin, int strobeRate) {
  
   _digitPins[0] = digit1Pin;
   _digitPins[1] = digit2Pin;
@@ -67,6 +67,7 @@ void LedDisplay::initialize(unsigned char digit1Pin, unsigned char digit2Pin, un
   _shiftClockPin = shiftClockPin;
   _shiftDataPin = shiftDataPin;
   _brightness = LED_BRIGHT_HI;
+  _strobeRate = strobeRate;
   
   pinMode(_digitPins[0], OUTPUT);
   pinMode(_digitPins[1], OUTPUT);
@@ -88,7 +89,7 @@ void LedDisplay::initialize(unsigned char digit1Pin, unsigned char digit2Pin, un
 /* Private functions
 /*************************************/
 
-int LedDisplay::minimum(int a, int b) {
+int SevenSegmentLED::minimum(int a, int b) {
   if (a <= b) {
    return a;
   }
@@ -97,7 +98,7 @@ int LedDisplay::minimum(int a, int b) {
 }
 
 
-void LedDisplay::strobeFourDigits(int number) {
+void SevenSegmentLED::strobeFourDigits(int number) {
   int i = 0;
   int n = 0;
   
@@ -113,7 +114,7 @@ void LedDisplay::strobeFourDigits(int number) {
   disableDisplay();
 }
 
-void LedDisplay::strobeSegment(int segment, int mapIndex) {
+void SevenSegmentLED::strobeSegment(int segment, int mapIndex) {
   int ledPin = _digitPins[segment];
   
   //set decimal point mask
@@ -138,15 +139,15 @@ void LedDisplay::strobeSegment(int segment, int mapIndex) {
 /* Public functions
 /*************************************/
 
-void LedDisplay::enableDisplay() {
+void SevenSegmentLED::enableDisplay() {
   digitalWrite(_shiftEnablePin, SHIFT_ENABLE_ON);
 }
 
-void LedDisplay::disableDisplay() {
+void SevenSegmentLED::disableDisplay() {
   digitalWrite(_shiftEnablePin, SHIFT_ENABLE_OFF);
 }
 
-void LedDisplay::resetLeds() {
+void SevenSegmentLED::resetLeds() {
   int i = 0;
   int ledPin;
 
@@ -156,7 +157,7 @@ void LedDisplay::resetLeds() {
   } 
 }
 
-void LedDisplay::strobeString(char* displayString) { 
+void SevenSegmentLED::strobeString(char* displayString) { 
   int i = 0;
   int n = 0;
   int charsToShow = 0;
@@ -196,7 +197,7 @@ void LedDisplay::strobeString(char* displayString) {
   disableDisplay();
 }
 
-void LedDisplay::strobeInt(int number) { 
+void SevenSegmentLED::strobeInt(int number) { 
 
   //no decimal point
   setDPMask(0);
@@ -206,7 +207,7 @@ void LedDisplay::strobeInt(int number) {
   
 }
 
-void LedDisplay::strobeFloat(long number, int decimalPlaces) {
+void SevenSegmentLED::strobeFloat(long number, int decimalPlaces) {
   unsigned char mask = 0;
   
   //set decimal place mask
@@ -217,17 +218,25 @@ void LedDisplay::strobeFloat(long number, int decimalPlaces) {
   strobeFourDigits(Utils::cropLongToXDigits(number, NUM_LED_DIGITS));
 }
 
-void LedDisplay::setBrightness(int brightness) {
+void SevenSegmentLED::setBrightness(int brightness) {
   _brightness = brightness;
 }
 
-void LedDisplay::setDPMask(unsigned char dpMask) {
+void SevenSegmentLED::setDPMask(unsigned char dpMask) {
   _dpMask = dpMask; 
 }
 
-unsigned char LedDisplay::generateDPMaskFromPosition(int segment) {
+unsigned char SevenSegmentLED::generateDPMaskFromPosition(int segment) {
   if (segment < 0) {
     return 0;
   }
   return 1 << segment;
+}
+
+void SevenSegmentLED::setStrobeRate(int strobeRate) {
+  _strobeRate = strobeRate;
+}
+
+int SevenSegmentLED::getStrobeRate(void) {
+  return _strobeRate;
 }

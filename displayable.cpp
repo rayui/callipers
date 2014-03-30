@@ -19,11 +19,11 @@ int Displayable::toString(char* output) {
 }
 
 unsigned char Displayable::generateDPMask() {
-  
+  return dpMask;
 }
 
 unsigned char Displayable::getDPMask() {
-  return dpMask; 
+  return dpMask;
 }
 
 void Displayable::setNumDigits(int digits) {

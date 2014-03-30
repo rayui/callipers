@@ -12,7 +12,7 @@
 #include "list.h"
 
 enum EventType {
-  EVT_NULL, EVT_BTN_CLICK, EVT_BTN_DBL_CLICK
+  EVT_NULL, EVT_BTN_CLICK, EVT_BTN_DBL_CLICK, EVT_SECOND_TICK
 };
 
 struct abstractCallback { 
@@ -70,25 +70,31 @@ class EventSequencer {
     void trigger(Source* source, EventType type);
       //creates an event object and adds into the event list
     void consumeEvents();
+    void clearEvents();
+    void clearSubscriptions();
+    void enable();
+    void disable();
   private:
     List<Subscription> _subscriptions;
     List<Event> _events;
     int _newSubscriptionId;
+    unsigned char _enabled;
 };
 
 class Eventable {
   public:
     Eventable();
-    ~Eventable(void);
+    virtual ~Eventable(void);
     void initialize(EventSequencer* evSeq);
     template <class Destination>
-    void bind(EventType type, void (Destination::*cb)(), Destination* destination);
+    void bind(EventType type, void (Destination::*cb)());
     void unbind(EventType type);
     void trigger(EventType type);
     int getSubscriptionId();
     void setSubscriptionId(int id);
-  private:
+  protected:
     EventSequencer* _evSeq;
+  private:
     int _subscriptionId;
 };
 
@@ -130,6 +136,9 @@ void EventSequencer::unbind(Source* source, EventType type) {
 
 template <class Source>
 void EventSequencer::trigger(Source* source, EventType type) {
+  if (_enabled == 0) {
+    return;
+  }
   Event* newEv = new Event;
   newEv->type = type;
   newEv->sourceId = source->getSubscriptionId();
@@ -137,8 +146,8 @@ void EventSequencer::trigger(Source* source, EventType type) {
 }
 
 template <class Destination>
-void Eventable::bind(EventType type, void (Destination::*cb)(), Destination* destination) {
-  _evSeq->bind(this, type, cb, destination);
+void Eventable::bind(EventType type, void (Destination::*cb)()) {
+  _evSeq->bind(this, type, cb, (Destination*)this);
 }
 
 #endif

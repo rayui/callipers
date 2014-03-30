@@ -2,8 +2,8 @@
   leddisplay.h - library to control 4 digit 7 segment LED
   (c) R Brooks 2014
 */
-#ifndef LedDisplay_h
-#define LedDisplay_h
+#ifndef SevenSegmnetLED_h
+#define SevenSegmnetLED_h
 
 #include <Energia.h>
 
@@ -40,10 +40,10 @@ The digit zero, for example would be represented as B11011110
 
 */
 
-class LedDisplay
+class SevenSegmentLED
 {
   public:
-    LedDisplay();
+    SevenSegmentLED();
     void initialize (
       unsigned char digit1Pin,
       unsigned char digit2Pin,
@@ -53,7 +53,8 @@ class LedDisplay
       unsigned char latchPin,
       unsigned char shiftClearPin,
       unsigned char shiftClockPin,
-      unsigned char shiftDataPin
+      unsigned char shiftDataPin,
+      int strobeRate
     );
     void resetLeds();
     void enableDisplay();
@@ -64,6 +65,8 @@ class LedDisplay
     void setBrightness(int brightness);
     void setDPMask(unsigned char dpMask);
     static unsigned char generateDPMaskFromPosition(int pin);
+    int getStrobeRate();
+    void setStrobeRate(int strobeRate);
   private:
     const static unsigned char characterMap[];
     static unsigned char mapSize;
@@ -78,6 +81,7 @@ class LedDisplay
     void strobeSegment(int segment, int mapIndex);
     void strobeFourDigits(int number);
     unsigned char _dpMask;
+    int _strobeRate;
 };
 
 #endif

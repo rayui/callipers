@@ -22,13 +22,15 @@ class Temp : public Displayable
 {
   public:
     Temp();
-    ~Temp();
+    virtual ~Temp();
     void updateReading();
     void initialize(int numDigits, EventSequencer* evSeq);
     void setDegreesC();
     void setDegreesF();
     void setDegreesK();
+    unsigned char generateDPMask(int segment);
     int toString(char* output);
+    void toggleScale();
   private:
     long runningTotals[3];
     unsigned char _scale;
@@ -36,7 +38,6 @@ class Temp : public Displayable
     int getTempXDPs(int scale, int sigFig);
     long voltageToTemp(long voltage, int scale);
     unsigned char setDisplayString(int scale);
-    void generateDPMaskFromPosition(int segment);
     void setScale(unsigned char scale);
 };
 
