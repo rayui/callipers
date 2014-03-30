@@ -66,6 +66,10 @@ void EventSequencer::clearSubscriptions() {
   _subscriptions.empty(); 
 }
 
+int EventSequencer:: getNumSubscriptions() {
+  return _subscriptions.getLength();
+}
+
 void EventSequencer::enable() {
   _enabled = 1;
 }

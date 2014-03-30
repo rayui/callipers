@@ -48,7 +48,7 @@ static Debouncer debouncerA;
 static Debouncer debouncerB;
 
 static int lastButtonEventFlag = 0;
-static ButtonEvent lastButtonEvent;
+static volatile ButtonEvent lastButtonEvent;
 
 static DisplayableManager displayManager;
 
@@ -94,7 +94,6 @@ static void setupHardware() {
 
 void setup()
 {
-  Displayable* _tmp;
   
   lastButtonEventFlag = 0;
   setupHardware();
@@ -106,15 +105,6 @@ void setup()
   displayManager.initialize(&evSeq);
   
   //the following code contains a memroy leak
-  
-/*  _tmp = new Temp();
-  ((Temp*)_tmp)->initialize(NUM_LED_DIGITS, &evSeq);
-  _tmp->bind(EVT_SECOND_TICK, &Temp::updateReading);
-  _tmp->bind(EVT_BTN_CLICK, &Temp::toggleScale);
-  _tmp->unbind(EVT_BTN_CLICK);
-  _tmp->unbind(EVT_SECOND_TICK);
-  delete _tmp;*/
-
   
   displayManager.loadTemp();
   displayManager.bind(EVT_BTN_DBL_CLICK, &DisplayableManager::loadNextApp);
@@ -150,6 +140,7 @@ void loop()
     displayManager.toString(displayString);
     ledDisplay.setDPMask(displayManager.getDPMask());
     ledDisplay.strobeString(displayString);
+//    ledDisplay.strobeInt(evSeq.getNumSubscriptions());
     
     lastStrobeTick = clockTick;
     debouncerA.trigger(EVT_SECOND_TICK);

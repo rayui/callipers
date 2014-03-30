@@ -27,7 +27,7 @@ struct ButtonEvent {
 class Debouncer : public Eventable {
   public:
     void initialize(int pin, EventSequencer* evSeq);
-    void addEvent(ButtonEvent* e);
+    void addEvent(volatile ButtonEvent* e);
     void debounce();
   private:
     List<ButtonEvent>* _events;
@@ -35,7 +35,7 @@ class Debouncer : public Eventable {
     int _pin;
     long _lastPrimaryClickTime;
     int _primaryClickFlag;
-    void _addEvent(ButtonEvent* e);
+    void _addEvent(volatile ButtonEvent* e);
     void _debounce();
     void _triggerPrimaryClick(void);
 };
