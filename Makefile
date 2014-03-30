@@ -237,7 +237,7 @@ ifeq "$(ENERGIABOARD)" "lpmsp430f5529_25"
 	MSPDEBUG_PROTOCOL:= tilib
 endif
 
-CPPFLAGS := -Os -Wall
+CPPFLAGS := -g -Os -Wall
 CPPFLAGS += -ffunction-sections -fdata-sections
 CPPFLAGS += -mmcu=$(BOARD_BUILD_MCU)
 CPPFLAGS += -DF_CPU=$(BOARD_BUILD_FCPU) -DARDUINO=$(ARDUINOCONST)  -DENERGIA=$(ENERGIACONST)
@@ -251,7 +251,7 @@ CPPFLAGS += $(patsubst %, -I$(ENERGIADIR)/libraries/%/utility, $(LIBRARIES))
 CPPDEPFLAGS = -MMD -MP -MF .dep/$<.dep
 CPPINOFLAGS := -x c++ -include $(ENERGIACOREDIR)/Arduino.h
 MSPDEBUGFLAGS :=  $(MSPDEBUG_PROTOCOL) 'erase' 'load $(TARGET).elf' 'exit'
-LINKFLAGS := -mmcu=$(BOARD_BUILD_MCU) -Os -Wl,-gc-sections,-u,main -lm
+LINKFLAGS := -g -mmcu=$(BOARD_BUILD_MCU) -Os -Wl,-gc-sections,-u,main -lm
 
 # figure out which arg to use with stty
 STTYFARG := $(shell stty --help > /dev/null 2>&1 && echo -F || echo -f)
@@ -290,7 +290,7 @@ boards:
 			-e 's/\(.\{14\}\) *\(.*\)/\1 \2/'
 
 monitor:
-	stty raw 9600 -F $(SERIALDEV)
+	stty raw 4800 -F $(SERIALDEV)
 	cat $(SERIALDEV)
 
 size: $(TARGET).elf
