@@ -16,7 +16,7 @@
 #define DEGREES_F_SYMBOL 'F'
 #define DEGREES_K_SYMBOL 'K'
 
-#define TEMP_SAMPLE_SIZE 1024  //at a sample rate of 25Hz, this is ~10 seconds of samples
+#define TEMP_SAMPLE_SIZE 256  //at a sample rate of 25Hz, this is ~10 seconds of samples
 
 class Temp : public Displayable
 {

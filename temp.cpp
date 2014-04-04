@@ -84,7 +84,7 @@ long Temp::voltageToTemp(long voltage, int scale) {
 
 int Temp::getTempXDPs(int scale, int numDPs) {
   long multipler = Utils::power(10, numDPs);
-  long temp = (multipler * runningTotals[scale]) >> 10;  //1024 = 2^10
+  long temp = (multipler * runningTotals[scale]) >> 8;  //256 = 2^10
   return temp;
 }
 
@@ -131,7 +131,7 @@ void Temp::updateReading() {
   latestReading = (long)analogRead(TEMPSENSOR);  //get latest reading
 
   for (int j = 3; j--; j > 0) {
-    runningTotals[j] -= (runningTotals[j] >> 10);  //subtract average from running total. 1024 = 2^10
+    runningTotals[j] -= (runningTotals[j] >> 8);  //subtract average from running total. 256 = 2^8
     runningTotals[j] += voltageToTemp(latestReading, j);  //add latest reading
   }
   

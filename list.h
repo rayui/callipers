@@ -41,6 +41,7 @@ template <class Base> class List
     Base* getRoot(void);
     Base* spliceRoot();
     Base* spliceCurrent();
+    void insertAtRoot(Base* node);
   private:
     ListNode<Base>* _root;
     ListNode<Base>* _lastNode;

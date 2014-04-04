@@ -15,25 +15,22 @@ void DisplayableManager::initialize (EventSequencer* evSeq) {
 
 void DisplayableManager::loadTemp() {
   _currentApp = new Temp();
-  
   ((Temp*)_currentApp)->initialize(NUM_LED_DIGITS, _evSeq);
-  _currentApp->bind(EVT_SECOND_TICK, &Temp::updateReading);
-  _currentApp->bind(EVT_BTN_CLICK, &Temp::toggleScale);
+  _currentApp->bind(EVT_SECOND_TICK, (memberPointer)&Temp::updateReading);
+  _currentApp->bind(EVT_BTN_CLICK, (memberPointer)&Temp::toggleScale);
   
 }
 
 void DisplayableManager::deleteTemp() {
-  _currentApp->unbind(EVT_BTN_CLICK);
   _currentApp->unbind(EVT_SECOND_TICK);
+  _currentApp->unbind(EVT_BTN_CLICK);
   delete (Temp*)_currentApp;
   _currentApp = 0;
 }
 
 void DisplayableManager::loadNextApp() {
-  _evSeq->disable();
   deleteTemp();
   loadTemp();
-  _evSeq->enable();
 }
 
 unsigned char DisplayableManager::getDPMask() {

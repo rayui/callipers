@@ -104,10 +104,8 @@ void setup()
   debouncerB.initialize(CTRL_PIN_B, &evSeq);
   displayManager.initialize(&evSeq);
   
-  //the following code contains a memroy leak
-  
   displayManager.loadTemp();
-  displayManager.bind(EVT_BTN_DBL_CLICK, &DisplayableManager::loadNextApp);
+  displayManager.bind(EVT_BTN_DBL_CLICK, (memberPointer)(&DisplayableManager::loadNextApp));
       
   ledDisplay.setBrightness(LED_BRIGHT_HI);
   

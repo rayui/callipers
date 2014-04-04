@@ -14,14 +14,47 @@ EventSequencer::~EventSequencer () {
 }
 
 void EventSequencer::initialize () {
-  _newSubscriptionId = 0;
   _enabled = 1;
 }
+
+void EventSequencer::bind(Eventable* source, EventType type, void (Eventable::*cb)(), Eventable* destination) {
+  
+  abstractCallback* evCb = new EventableCallback(cb, destination);
+  
+  Subscription* newSub = new Subscription;
+  newSub->source = source;
+  newSub->type = type;
+  newSub->addCallback(evCb);
+  _subscriptions.insertAtRoot(newSub);
+  
+}
+
+void EventSequencer::unbind(Eventable* source, EventType type) {
+  Subscription* subscription = _subscriptions.moveToHead();
+  
+  while(subscription != 0) {
+    if (source == subscription->source && type == subscription->type) {
+      _subscriptions.spliceCurrent();
+    }
+    subscription = _subscriptions.moveToNext();
+  }
+  
+}
+
+void EventSequencer::trigger(Eventable* source, EventType type) {
+  if (_enabled == 0) {
+    return;
+  }
+  Event* newEv = new Event;
+  newEv->type = type;
+  newEv->source = source;
+  _events.insertAtRoot(newEv);
+}
+
 
 void EventSequencer::consumeEvents() {
   Event *e = _events.moveToHead();
   Subscription *s = _subscriptions.moveToHead();
-  int i = 0;
   
   if (_enabled == 0) {
     return;
@@ -42,12 +75,10 @@ void EventSequencer::consumeEvents() {
     //loop through the list of subscriptions for all matching this event type
     while (s != 0) {
       //if types match, call callback
-//      if (e->type == s->type && s->id == e->sourceId) {
       if (e->type == s->type) {
         s->callback->call();
       }
       s = _subscriptions.moveToNext();
-      i++;
     }
     
     e = _events.moveToNext();
@@ -78,6 +109,9 @@ void EventSequencer::disable() {
   _enabled = 0;  
 }
 
+
+
+
 /*************************************/
 /* Eventable
 /*************************************/
@@ -91,16 +125,12 @@ Eventable::~Eventable () {
 
 void Eventable::initialize (EventSequencer* evSeq) {
   _evSeq = evSeq;
-  _subscriptionId = -1;
 }
 
-void Eventable::setSubscriptionId(int id) {
-  _subscriptionId = id;
+void Eventable::bind(EventType type, void (Eventable::*cb)()) {
+  _evSeq->bind(this, type, cb, this);
 }
 
-int Eventable::getSubscriptionId() {
-  return _subscriptionId;
-}
 
 void Eventable::trigger(EventType type) {
   _evSeq->trigger(this, type);

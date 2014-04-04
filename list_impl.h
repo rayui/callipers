@@ -9,7 +9,6 @@ template <class Base> ListNode<Base>::ListNode(Base *node) {
 
 template <class Base> ListNode<Base>::~ListNode() {
   delete _node;
-  delete _next;
 }
 
 template <class Base> ListNode<Base>* ListNode<Base>::getNext(void) {
@@ -44,8 +43,6 @@ template <class Base> List<Base>::~List() {
     popNode();
   }
   delete _root;
-  delete _lastNode;
-  delete _currentNode;
 }
 
 template <class Base> Base* List<Base>::getRoot(void) {
@@ -65,13 +62,13 @@ template <class Base> Base* List<Base>::spliceRoot() {
   
   if (_root->getNext() == 0) {
     delete _root;
-    delete _currentNode;
     _root = 0;
     _currentNode = 0;
+    _lastNode = 0;
   } else {
-    temp = _root->getNext();
-    delete _root;
-    _root = temp;
+    temp = _root;
+    _root = _root->getNext();
+    delete temp;
   }
   
   return _root->getNode();
@@ -92,7 +89,7 @@ template <class Base> Base* List<Base>::spliceCurrent() {
   if (_currentNode == _root) {
     root = spliceRoot();
     _currentNode = _root;
-    return root; 
+   return root; 
   }
   
   temp = _root;
@@ -183,11 +180,20 @@ template <class Base> Base* List<Base>::popNode() {
   if (temp == _root) {
     delete _root;
     _root = 0;
+  } else {
+    delete temp;
   }
 
-  delete temp;
-  
   return poppedNode;
+
+}
+
+template <class Base> void List<Base>::insertAtRoot(Base *node) {
+  
+  ListNode<Base>* newNode = new ListNode<Base>(node);
+
+  newNode->setNext(_root);
+  _root = newNode;
 
 }
 
@@ -238,8 +244,8 @@ template <class Base> unsigned char List<Base>::hasNext() {
 
 template <class Base> void List<Base>::empty() {
   while(popNode() != 0) {}
-  delete _root;
-  _root = 0;
+  _lastNode = 0;
+  _currentNode = 0;
 }
 
 template <class Base> int List<Base>::getLength() {
