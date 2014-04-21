@@ -53,37 +53,31 @@ unsigned char SevenSegmentLED::mapSize = sizeof(characterMap) / sizeof(unsigned 
 /* Constructor
 /*************************************/
 
-SevenSegmentLED::SevenSegmentLED() {};
-
-void SevenSegmentLED::initialize(unsigned char digit1Pin, unsigned char digit2Pin, unsigned char digit3Pin, unsigned char digit4Pin, unsigned char shiftEnablePin, unsigned char latchPin, unsigned char shiftClearPin, unsigned char shiftClockPin, unsigned char shiftDataPin, int strobeRate) {
- 
-  _digitPins[0] = digit1Pin;
-  _digitPins[1] = digit2Pin;
-  _digitPins[2] = digit3Pin;
-  _digitPins[3] = digit4Pin;
-  _shiftEnablePin = shiftEnablePin;
-  _latchPin = latchPin;
-  _shiftClearPin = shiftClearPin;
-  _shiftClockPin = shiftClockPin;
-  _shiftDataPin = shiftDataPin;
+SevenSegmentLED::SevenSegmentLED() {
+  _digitPins[0] = LED_PIN_1;
+  _digitPins[1] = LED_PIN_2;
+  _digitPins[2] = LED_PIN_3;
+  _digitPins[3] = LED_PIN_4;
   _brightness = LED_BRIGHT_HI;
-  _strobeRate = strobeRate;
+  _strobeRate = LED_STROBE_INTERVAL_MS;
   
   pinMode(_digitPins[0], OUTPUT);
   pinMode(_digitPins[1], OUTPUT);
   pinMode(_digitPins[2], OUTPUT);
   pinMode(_digitPins[3], OUTPUT);
-  pinMode(_shiftEnablePin, OUTPUT);
-  pinMode(_latchPin, OUTPUT);
-  pinMode(_shiftClearPin, OUTPUT);
-  pinMode(_shiftClockPin, OUTPUT);
-  pinMode(_shiftDataPin, OUTPUT);
+  pinMode(SHIFT_ENABLE_PIN, OUTPUT);
+  pinMode(LATCH_PIN, OUTPUT);
+  pinMode(SHIFT_CLEAR_PIN, OUTPUT);
+  pinMode(SHIFT_CLOCK_PIN, OUTPUT);
+  pinMode(DATA_PIN, OUTPUT);
 
-  digitalWrite(_shiftEnablePin, SHIFT_ENABLE_OFF);
-  digitalWrite(_shiftClearPin, HIGH);
+  digitalWrite(SHIFT_ENABLE_PIN, SHIFT_ENABLE_OFF);
+  digitalWrite(SHIFT_CLEAR_PIN, HIGH);
   
   _dpMask = 0;
+
 }
+
 
 /*************************************/
 /* Private functions
@@ -124,9 +118,9 @@ void SevenSegmentLED::strobeSegment(int segment, int mapIndex) {
    mapIndex = 1; //bottom line
   }
   
-  digitalWrite(_latchPin, LOW);
-  shiftOut(_shiftDataPin, _shiftClockPin, LSBFIRST, characterMap[mapIndex] ^ (B11111111 ^ decimalPoint));
-  digitalWrite(_latchPin, HIGH);
+  digitalWrite(LATCH_PIN, LOW);
+  shiftOut(DATA_PIN, SHIFT_CLOCK_PIN, LSBFIRST, characterMap[mapIndex] ^ (B11111111 ^ decimalPoint));
+  digitalWrite(LATCH_PIN, HIGH);
   
   //allow to settle
   
@@ -140,11 +134,11 @@ void SevenSegmentLED::strobeSegment(int segment, int mapIndex) {
 /*************************************/
 
 void SevenSegmentLED::enableDisplay() {
-  digitalWrite(_shiftEnablePin, SHIFT_ENABLE_ON);
+  digitalWrite(SHIFT_ENABLE_PIN, SHIFT_ENABLE_ON);
 }
 
 void SevenSegmentLED::disableDisplay() {
-  digitalWrite(_shiftEnablePin, SHIFT_ENABLE_OFF);
+  digitalWrite(SHIFT_ENABLE_PIN, SHIFT_ENABLE_OFF);
 }
 
 void SevenSegmentLED::resetLeds() {

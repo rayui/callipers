@@ -1,54 +1,42 @@
 #include "debouncer.h"
 
-void Debouncer::initialize (int pin, EventSequencer* evSeq) {
-  Eventable::initialize(evSeq);
-  _pin = pin;
-  _events = new List<ButtonEvent>;
+Debouncer::Debouncer(EventSequencer* evSeq) : Eventable(evSeq) {
   _lastPrimaryClickTime = 0;
   _primaryClickFlag = 0;
 }
 
-void Debouncer::_addEvent(volatile ButtonEvent* event) {
-  ButtonEvent* e = new ButtonEvent;
-  e->pin = event->pin;
-  e->time = event->time;
-  _events->pushNode(e);
+
+void Debouncer::enqueue(volatile long time) {
+  if (time != 0) { 
+    _events.insertAtRoot(new long(time));
+  }
 }
 
 void Debouncer::_debounce() { 
-  int timeDiff = 0;
-  ButtonEvent* current;
+  long timeDiff = 0;
+  long* current = _events.moveToHead();
   
-  if (_events->getRoot() == 0) {
+  if (_events.getRoot() == 0) {
     return;
   }
   
-  current = _events->moveToHead();
-  
   while(current != 0) {
-    if (current->pin == _pin) {
-      timeDiff = current->time - _lastPrimaryClickTime;
-      if (timeDiff > CLICK_BOUNCE_TIME) {
-        if (timeDiff < CLICK_TIMEOUT && _primaryClickFlag != 0) {
-          Eventable::trigger(EVT_BTN_DBL_CLICK);
-          _primaryClickFlag = 0;
-        } else {
-          _primaryClickFlag = 1;
-        }
-        _lastPrimaryClickTime = current->time;
+    timeDiff = *current - _lastPrimaryClickTime;
+    if (timeDiff > CLICK_BOUNCE_TIME) {
+      if (timeDiff < CLICK_TIMEOUT && _primaryClickFlag != 0) {
+        Eventable::trigger(EVT_BTN_DBL_CLICK, 0);
+        _primaryClickFlag = 0;
+      } else {
+        _primaryClickFlag = 1;
       }
-          
-      current = _events->moveToNext();
-      _events->spliceRoot();
+      _lastPrimaryClickTime = *current;
     }
+          
+    current = _events.moveToNext();
   }
-  
-}
-
-void Debouncer::addEvent(volatile ButtonEvent* event) {
-  if (event != 0) {
-    _addEvent(event);
-  }
+ 
+  _events.empty();
+ 
 }
 
 void Debouncer::debounce() {
@@ -58,7 +46,7 @@ void Debouncer::debounce() {
 
 void Debouncer::_triggerPrimaryClick() {
   if (millis() - _lastPrimaryClickTime > CLICK_TIMEOUT && _primaryClickFlag != 0) {
-    Eventable::trigger(EVT_BTN_CLICK);
+    Eventable::trigger(EVT_BTN_CLICK, 0);
     _primaryClickFlag = 0;
   }
 }

@@ -9,6 +9,20 @@
 
 #define NUM_LED_DIGITS 4
 
+#define LED_STROBE_INTERVAL_MS 20 //milliseconds
+
+/* shift register pins */
+
+#define LED_PIN_1 15
+#define LED_PIN_2 14
+#define LED_PIN_3 13
+#define LED_PIN_4 12
+#define SHIFT_ENABLE_PIN 7
+#define LATCH_PIN 8
+#define SHIFT_CLEAR_PIN 10
+#define SHIFT_CLOCK_PIN 9
+#define DATA_PIN 11
+
 #define LED_ON HIGH
 #define LED_OFF LOW
 
@@ -44,18 +58,6 @@ class SevenSegmentLED
 {
   public:
     SevenSegmentLED();
-    void initialize (
-      unsigned char digit1Pin,
-      unsigned char digit2Pin,
-      unsigned char digit3Pin,
-      unsigned char digit4Pin,
-      unsigned char shiftEnablePin,
-      unsigned char latchPin,
-      unsigned char shiftClearPin,
-      unsigned char shiftClockPin,
-      unsigned char shiftDataPin,
-      int strobeRate
-    );
     void resetLeds();
     void enableDisplay();
     void disableDisplay();
@@ -71,11 +73,6 @@ class SevenSegmentLED
     const static unsigned char characterMap[];
     static unsigned char mapSize;
     unsigned char _digitPins[NUM_LED_DIGITS];
-    unsigned char _shiftEnablePin;
-    unsigned char _latchPin;
-    unsigned char _shiftClearPin;
-    unsigned char _shiftClockPin;
-    unsigned char _shiftDataPin;
     unsigned char _brightness;
     int minimum(int a, int b);
     void strobeSegment(int segment, int mapIndex);

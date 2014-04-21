@@ -12,16 +12,7 @@ F = (A * 48724 - 30634388) >> 16
 #include "utils.h"
 #include "temp.h"
 
-Temp::Temp() : Displayable() {
-
-}
-
-Temp::~Temp() {
-
-}
-
-void Temp::initialize(int numDigits, EventSequencer* evSeq) {
-  Displayable::initialize(numDigits, evSeq);
+Temp::Temp(EventSequencer* evSeq) : Displayable(evSeq) {
   _scale = DEGREES_C;
   latestReading = 0;
   analogReference(INTERNAL1V5);
@@ -39,15 +30,18 @@ void Temp::initialize(int numDigits, EventSequencer* evSeq) {
     for (int j = 3; j--; j > 0) {
       runningTotals[j] += voltageToTemp(latestReading, j);
     }
-    delay(1);
   }
   
   setDegreesC();
-  
+
+}
+
+Temp::~Temp() {
+
 }
 
 int Temp::toString(char* output) {
-  int numDigits = setDisplayString(_scale);
+  int numDigits = setDisplayString();
   Displayable::toString(output);
   return numDigits;
 }
@@ -82,13 +76,13 @@ long Temp::voltageToTemp(long voltage, int scale) {
   return temp;
 }
 
-int Temp::getTempXDPs(int scale, int numDPs) {
+int Temp::getXDPs(int numDPs) {
   long multipler = Utils::power(10, numDPs);
-  long temp = (multipler * runningTotals[scale]) >> 8;  //256 = 2^10
+  long temp = (multipler * runningTotals[_scale]) >> 8;  //256 = 2^10
   return temp;
 }
 
-unsigned char Temp::setDisplayString(int scale) {
+unsigned char Temp::setDisplayString() {
 
   //we can think about numDigits as number of significant figures
   //we are always going to have 2 decimal places, some of which will eventually be cropped off to fit on the display
@@ -97,7 +91,7 @@ unsigned char Temp::setDisplayString(int scale) {
   //need 17 bytes to store a full int
   int i = 0;
   char scaleSymbol = DEGREES_C_SYMBOL;
-  int temp = getTempXDPs(scale, 2);
+  int temp = getXDPs(2);
   int dpPosition = -1;
   
   if (_scale == DEGREES_K) {

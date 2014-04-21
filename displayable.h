@@ -13,9 +13,8 @@
 
 class Displayable : public Eventable {
   public:
-    Displayable(void);
+    Displayable(EventSequencer* evSeq);
     virtual ~Displayable(void);
-    void initialize(int numDigits, EventSequencer* evSeq);
     virtual int toString(char* output);
     void setNumDigits(int digits);
     int getNumDigits(int digits);
@@ -26,7 +25,6 @@ class Displayable : public Eventable {
     char _displayString[NUM_LED_DIGITS + 1];
     unsigned char dpMask;
   private:
-
 };
 
 #endif

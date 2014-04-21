@@ -1,16 +1,11 @@
 #include "displayable.h"
 
-Displayable::Displayable(void) : Eventable() {
-
+Displayable::Displayable(EventSequencer* evSeq) : Eventable(evSeq) {
+  _numDigits = NUM_LED_DIGITS;
 }
 
 Displayable::~Displayable(void) {
 
-}
-
-void Displayable::initialize (int numDigits, EventSequencer* evSeq) {
-  Eventable::initialize(evSeq);
-  _numDigits = numDigits;
 }
 
 int Displayable::toString(char* output) {

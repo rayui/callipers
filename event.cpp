@@ -6,15 +6,11 @@
 /*************************************/
 
 EventSequencer::EventSequencer () {
-
+  _enabled = 1;
 }
 
 EventSequencer::~EventSequencer () {
 
-}
-
-void EventSequencer::initialize () {
-  _enabled = 1;
 }
 
 void EventSequencer::bind(Eventable* source, EventType type, void (Eventable::*cb)(), Eventable* destination) {
@@ -41,13 +37,28 @@ void EventSequencer::unbind(Eventable* source, EventType type) {
   
 }
 
-void EventSequencer::trigger(Eventable* source, EventType type) {
+
+void EventSequencer::unbindAll(Eventable* source) {
+  Subscription* subscription = _subscriptions.moveToHead();
+  
+  while(subscription != 0) {
+    if (source == subscription->source) {
+      _subscriptions.spliceCurrent();
+    }
+    subscription = _subscriptions.moveToNext();
+  }
+  
+}
+
+
+void EventSequencer::trigger(Eventable* source, EventType type, int data) {
   if (_enabled == 0) {
     return;
   }
   Event* newEv = new Event;
   newEv->type = type;
   newEv->source = source;
+  newEv->data = data;
   _events.insertAtRoot(newEv);
 }
 
@@ -90,7 +101,9 @@ void EventSequencer::consumeEvents() {
 }
 
 void EventSequencer::clearEvents() {
-  _events.empty(); 
+  _enabled = 0;
+  _events.empty();
+  _enabled = 1; 
 }
 
 void EventSequencer::clearSubscriptions() {
@@ -116,15 +129,12 @@ void EventSequencer::disable() {
 /* Eventable
 /*************************************/
 
-Eventable::Eventable () {
+Eventable::Eventable (EventSequencer* evSeq) {
+  _evSeq = evSeq;
 }
 
 Eventable::~Eventable () {
 
-}
-
-void Eventable::initialize (EventSequencer* evSeq) {
-  _evSeq = evSeq;
 }
 
 void Eventable::bind(EventType type, void (Eventable::*cb)()) {
@@ -132,11 +142,14 @@ void Eventable::bind(EventType type, void (Eventable::*cb)()) {
 }
 
 
-void Eventable::trigger(EventType type) {
-  _evSeq->trigger(this, type);
+void Eventable::trigger(EventType type, int data) {
+  _evSeq->trigger(this, type, data);
 }
 
 void Eventable::unbind(EventType type) {
   _evSeq->unbind(this, type);
 }
 
+void Eventable::unbindAll() {
+  _evSeq->unbindAll(this);
+}

@@ -19,7 +19,6 @@ int Encoder::toString(char* output) {
 unsigned char Encoder::setDisplayString() {
   int dpPosition = 0;
   return generateDPMask(dpPosition);
-  return 0;
 }
 
 void Encoder::setScale(unsigned char scale) {

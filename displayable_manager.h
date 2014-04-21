@@ -11,19 +11,25 @@
 #include "event.h"
 #include "displayable.h"
 #include "temp.h"
+#include "encoder.h"
 
 class DisplayableManager : public Eventable {
   public:
-    DisplayableManager(void);
+    DisplayableManager(EventSequencer* evSeq);
     ~DisplayableManager(void);
-    void initialize(EventSequencer* evSeq);
-    void loadTemp();
-    void deleteTemp();
     void loadNextApp();
     unsigned char getDPMask();
     int toString(char* output);
   private:
-    Displayable* _currentApp;
+    Displayable* _current;
+    Temp* _temp;
+    Encoder* _enc;
+    int appId;
+    void loadTemp();
+    void loadEncoder();
+    void deleteTemp();
+    void deleteEncoder();
+    void deleteRuler();
 };
 
 #endif

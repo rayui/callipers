@@ -12,7 +12,7 @@
 #include "list.h"
 
 enum EventType {
-  EVT_NULL, EVT_BTN_CLICK, EVT_BTN_DBL_CLICK, EVT_SECOND_TICK
+  EVT_NULL, EVT_BTN_CLICK, EVT_BTN_DBL_CLICK, EVT_SECOND_TICK, EVT_ENCODER
 };
 
 //forward declare eventable type
@@ -43,6 +43,7 @@ struct EventableCallback : public abstractCallback {
 struct Event {
   EventType type;
   Eventable* source;
+  int data;
 };
 
 struct Subscription {
@@ -64,10 +65,10 @@ class EventSequencer {
   public:
     EventSequencer(void);
     ~EventSequencer(void);
-    void initialize(void);
     void bind(Eventable* source, EventType type, void (Eventable::*cb)(), Eventable* destination);
     void unbind(Eventable* source, EventType type);
-    void trigger(Eventable* source, EventType type);
+    void unbindAll(Eventable* source);
+    void trigger(Eventable* source, EventType type, int data);
     void consumeEvents();
     void clearEvents();
     void clearSubscriptions();
@@ -82,12 +83,12 @@ class EventSequencer {
 
 class Eventable {
   public:
-    Eventable();
+    Eventable(EventSequencer* evSeq);
     virtual ~Eventable(void);
-    void initialize(EventSequencer* evSeq);
     virtual void bind(EventType type, void (Eventable::*cb)());
     virtual void unbind(EventType type);
-    virtual void trigger(EventType type);
+    void unbindAll();
+    virtual void trigger(EventType type, int data);
   protected:
     EventSequencer* _evSeq;
   private:
