@@ -2,8 +2,8 @@
 #include "encoder.h"
 
 Encoder::Encoder(EventSequencer* evSeq) : Displayable(evSeq) {
+  strncpy(_displayString, "0000\0", 5);
   position = 0;
-  strncpy(_displayString, "iiii\0", 4);
 }
 
 Encoder::~Encoder() {
@@ -25,13 +25,10 @@ void Encoder::setScale(unsigned char scale) {
   _scale = scale;
 }
 
-void Encoder::updateReading(int encoderPinBState) {
-  if (encoderPinBState == LOW) {
-    position--;
-  } else {
-    position++;
-  }
-  itoa(position, _displayString, 4);
+void Encoder::updateReading(int step) {
+  Serial.println(step);
+  position += step;
+  itoa(step, _displayString, 10);
   _displayString[_numDigits] = 0;
 }
 

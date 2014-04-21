@@ -22,10 +22,10 @@
 class Debouncer : public Eventable {
   public:
     Debouncer(EventSequencer* evSeq);
-    void enqueue(volatile long time);
+    void checkBounce(volatile long time);
     void debounce();
   private:
-    List<long> _events;
+    long _lastEventTime;
     EventSequencer* _evSeq;
     long _lastPrimaryClickTime;
     int _primaryClickFlag;

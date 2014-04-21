@@ -8,7 +8,7 @@
 
 /* optical encoder pins */
 
-#define ENCODER_PIN_A 5
+#define ENCODER_PIN_A 5 
 #define ENCODER_PIN_B 6
 
 /* control button pin */
@@ -17,6 +17,8 @@
 #define CTRL_PIN_B 18
 
 static char displayString[NUM_LED_DIGITS + 1];
+
+long volatile encoderStep = 0;
 
 /* event sequencer */
 
@@ -38,16 +40,20 @@ static long lastStrobeTick = 0;
 
 static void toggleButtonA() {
   long time = millis();
-  debouncerA.enqueue(time);
+  debouncerA.checkBounce(time);
 }
 
 static void toggleButtonB() {
   long time = millis();
-  debouncerB.enqueue(time);
+  debouncerB.checkBounce(time);
 }
 
 static void handleEncoder() {
-  debouncerA.trigger(EVT_ENCODER, analogRead(ENCODER_PIN_B)); 
+  if (digitalRead(ENCODER_PIN_A) == digitalRead(ENCODER_PIN_B)) {
+    encoderStep += 1;
+  } else {
+    encoderStep -= 1;
+  }
 }
 
 static void setupHardware() {
@@ -55,7 +61,7 @@ static void setupHardware() {
   pinMode(ENCODER_PIN_A, INPUT);
   pinMode(ENCODER_PIN_B, INPUT);
 
-  attachInterrupt(ENCODER_PIN_A, &handleEncoder, RISING);   //encoder blinked
+  attachInterrupt(ENCODER_PIN_A, &handleEncoder, CHANGE);   //encoder blinked
 
   pinMode(CTRL_PIN_A, INPUT);
   attachInterrupt(CTRL_PIN_A, &toggleButtonA, FALLING);  //should be on button release
@@ -67,6 +73,8 @@ static void setupHardware() {
 
 void setup()
 {
+
+  Serial.begin(4800);
 
   setupHardware();
   
@@ -96,6 +104,12 @@ void loop()
     lastStrobeTick = clockTick;
     debouncerA.trigger(EVT_SECOND_TICK, 0);
 
+    if (encoderStep != 0) {
+      Serial.println((int)encoderStep);
+      debouncerA.trigger(EVT_ENCODER, (int)encoderStep);
+      encoderStep = 0;
+    }
   }
-  
+ 
+ 
 }

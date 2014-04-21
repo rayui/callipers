@@ -19,12 +19,12 @@ class Encoder : public Displayable
   public:
     Encoder(EventSequencer* evSeq);
     virtual ~Encoder();
-    void updateReading(int encoderPinBState);
+    void updateReading(int step);
     virtual unsigned char generateDPMask(int segment);
     virtual int toString(char* output);
     void toggleScale();
   private:
-    int position;
+    long position;
     unsigned char _scale;
     long latestReading;
     int getXDPs(int scale, int sigFig);
