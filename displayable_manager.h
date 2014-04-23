@@ -7,7 +7,6 @@
 #ifndef Displayable_Manager_h
 #define Displayable_Manager_h
 
-#include <Energia.h>
 #include "event.h"
 #include "displayable.h"
 #include "temp.h"
@@ -22,8 +21,6 @@ class DisplayableManager : public Eventable {
     int toString(char* output);
   private:
     Displayable* _current;
-    Temp* _temp;
-    Encoder* _enc;
     int appId;
     void loadTemp();
     void loadEncoder();

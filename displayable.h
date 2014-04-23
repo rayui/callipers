@@ -23,7 +23,7 @@ class Displayable : public Eventable {
   protected:
     int _numDigits;
     char _displayString[NUM_LED_DIGITS + 1];
-    unsigned char dpMask;
+    unsigned char _dpMask;
   private:
 };
 

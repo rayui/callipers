@@ -15,11 +15,11 @@ int Displayable::toString(char* output) {
 }
 
 unsigned char Displayable::generateDPMask() {
-  return dpMask;
+  return _dpMask;
 }
 
 unsigned char Displayable::getDPMask() {
-  return dpMask;
+  return _dpMask;
 }
 
 void Displayable::setNumDigits(int digits) {

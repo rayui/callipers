@@ -142,12 +142,12 @@ void Temp::toggleScale() {
 
 unsigned char Temp::generateDPMask(int segment) {
   if (segment < 0) {
-    dpMask = 0;
+    _dpMask = 0;
   } else {
-    dpMask = 1 << segment;
+    _dpMask = 1 << segment;
   }
   
-  return dpMask;
+  return _dpMask;
 }
 
 void Temp::setScale(unsigned char scale) {

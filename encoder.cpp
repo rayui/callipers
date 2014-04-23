@@ -16,7 +16,7 @@ int Encoder::toString(char* output) {
 }
 
 unsigned char Encoder::setDisplayString() {
-  int dpPosition = 0;
+  int dpPosition = 2;
   return generateDPMask(dpPosition);
 }
 
@@ -29,12 +29,17 @@ void Encoder::updateReading(long *step) {
   position += *step;
 
   mmPos = position * 254 / 275;
-  dpMask = 2;
 
   itoa(mmPos, _displayString, 10);
   _displayString[_numDigits] = 0;
 }
 
 unsigned char Encoder::generateDPMask(int segment) {
-  return dpMask;
+  if (segment < 0) {
+    _dpMask = 0;
+  } else {
+    _dpMask = 1 << segment;
+  }
+  
+  return _dpMask;
 }

@@ -2,8 +2,6 @@
 
 DisplayableManager::DisplayableManager(EventSequencer* evSeq) : Eventable(evSeq) {
   appId = 0;
-  _temp = 0;
-  _enc = 0;
   _current = 0;
 }
 
@@ -15,33 +13,13 @@ void DisplayableManager::loadTemp() {
   _current = new Temp(_evSeq);
   _current->bind(EVT_SECOND_TICK, (memberPointer)&Temp::updateReading);
   _current->bind(EVT_BTN_CLICK, (memberPointer)&Temp::toggleScale);
-  _temp = (Temp*)_current;
   appId = 1;
-}
-
-void DisplayableManager::deleteTemp() {
-  if (_temp == 0) {
-    return;
-  }
-  delete _temp;
-  _temp = 0;
-  _current = 0;
 }
 
 void DisplayableManager::loadEncoder() {
   _current = new Encoder(_evSeq);
   _current->bind(EVT_ENCODER, (memberPointer)&Encoder::updateReading);
-  _enc = (Encoder*)_current;
   appId = 0;
-}
-
-void DisplayableManager::deleteEncoder() {
-  if (_enc == 0) {
-    return;
-  }
-  delete _enc;
-  _enc = 0;
-  _current = 0;
 }
 
 void DisplayableManager::deleteCurrent() {
@@ -57,10 +35,7 @@ void DisplayableManager::loadNextApp() {
     return;
   }
 
-  deleteTemp();
-  deleteEncoder();
-
-  //deleteCurrent();
+  deleteCurrent();
 
   if (appId == 1) {
     loadEncoder();
