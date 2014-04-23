@@ -105,7 +105,7 @@ void loop()
     debouncerA.trigger(EVT_SECOND_TICK, NULL);
 
     if (encoderStep != 0) {
-      debouncerA.trigger(EVT_ENCODER, NULL);
+      debouncerA.trigger(EVT_ENCODER, (void*)&encoderStep);
       encoderStep = 0;
     }
   }

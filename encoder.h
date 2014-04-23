@@ -19,7 +19,7 @@ class Encoder : public Displayable
   public:
     Encoder(EventSequencer* evSeq);
     virtual ~Encoder();
-    void updateReading(int step);
+    void updateReading(long *step);
     virtual unsigned char generateDPMask(int segment);
     virtual int toString(char* output);
     void toggleScale();

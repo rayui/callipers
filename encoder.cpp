@@ -24,8 +24,8 @@ void Encoder::setScale(unsigned char scale) {
   _scale = scale;
 }
 
-void Encoder::updateReading(int step) {
-  position += step;
+void Encoder::updateReading(long *step) {
+  position += *step;
   itoa(position, _displayString, 10);
   _displayString[_numDigits] = 0;
 }
