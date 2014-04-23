@@ -2,6 +2,7 @@
 
 Displayable::Displayable(EventSequencer* evSeq) : Eventable(evSeq) {
   _numDigits = NUM_LED_DIGITS;
+  strncpy(_displayString, "0000\0", _numDigits);
 }
 
 Displayable::~Displayable(void) {

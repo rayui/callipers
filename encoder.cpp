@@ -2,7 +2,6 @@
 #include "encoder.h"
 
 Encoder::Encoder(EventSequencer* evSeq) : Displayable(evSeq) {
-  strncpy(_displayString, "0000\0", 5);
   position = 0;
 }
 
@@ -26,9 +25,8 @@ void Encoder::setScale(unsigned char scale) {
 }
 
 void Encoder::updateReading(int step) {
-  Serial.println(step);
   position += step;
-  itoa(step, _displayString, 10);
+  itoa(position, _displayString, 10);
   _displayString[_numDigits] = 0;
 }
 

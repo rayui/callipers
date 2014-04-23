@@ -57,6 +57,8 @@ static void handleEncoder() {
 }
 
 static void setupHardware() {
+
+  analogReference(INTERNAL1V5);
   
   pinMode(ENCODER_PIN_A, INPUT);
   pinMode(ENCODER_PIN_B, INPUT);
@@ -73,8 +75,6 @@ static void setupHardware() {
 
 void setup()
 {
-
-  Serial.begin(4800);
 
   setupHardware();
   
@@ -102,11 +102,10 @@ void loop()
     ledDisplay.strobeString(displayString);
     
     lastStrobeTick = clockTick;
-    debouncerA.trigger(EVT_SECOND_TICK, 0);
+    debouncerA.trigger(EVT_SECOND_TICK, NULL);
 
     if (encoderStep != 0) {
-      Serial.println((int)encoderStep);
-      debouncerA.trigger(EVT_ENCODER, (int)encoderStep);
+      debouncerA.trigger(EVT_ENCODER, NULL);
       encoderStep = 0;
     }
   }

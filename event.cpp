@@ -13,7 +13,7 @@ EventSequencer::~EventSequencer () {
 
 }
 
-void EventSequencer::bind(Eventable* source, EventType type, void (Eventable::*cb)(), Eventable* destination) {
+void EventSequencer::bind(Eventable* source, EventType type, memberPointer cb, Eventable* destination) {
   
   abstractCallback* evCb = new EventableCallback(cb, destination);
   
@@ -51,7 +51,7 @@ void EventSequencer::unbindAll(Eventable* source) {
 }
 
 
-void EventSequencer::trigger(Eventable* source, EventType type, int data) {
+void EventSequencer::trigger(Eventable* source, EventType type, void *data) {
   if (_enabled == 0) {
     return;
   }
@@ -87,7 +87,7 @@ void EventSequencer::consumeEvents() {
     while (s != 0) {
       //if types match, call callback
       if (e->type == s->type) {
-        s->callback->call();
+        s->callback->call(e->data);
       }
       s = _subscriptions.moveToNext();
     }
@@ -101,13 +101,15 @@ void EventSequencer::consumeEvents() {
 }
 
 void EventSequencer::clearEvents() {
-  _enabled = 0;
+  disable();
   _events.empty();
-  _enabled = 1; 
+  enable(); 
 }
 
 void EventSequencer::clearSubscriptions() {
-  _subscriptions.empty(); 
+  disable();
+  _subscriptions.empty();
+  enable();
 }
 
 int EventSequencer:: getNumSubscriptions() {
@@ -137,12 +139,12 @@ Eventable::~Eventable () {
 
 }
 
-void Eventable::bind(EventType type, void (Eventable::*cb)()) {
+void Eventable::bind(EventType type, memberPointer cb) {
   _evSeq->bind(this, type, cb, this);
 }
 
 
-void Eventable::trigger(EventType type, int data) {
+void Eventable::trigger(EventType type, void *data) {
   _evSeq->trigger(this, type, data);
 }
 

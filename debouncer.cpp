@@ -19,7 +19,7 @@ void Debouncer::_debounce() {
     timeDiff = _lastEventTime - _lastPrimaryClickTime;
     if (timeDiff > CLICK_BOUNCE_TIME) {
       if (timeDiff < CLICK_TIMEOUT && _primaryClickFlag != 0) {
-        Eventable::trigger(EVT_BTN_DBL_CLICK, 0);
+        Eventable::trigger(EVT_BTN_DBL_CLICK, NULL);
         _primaryClickFlag = 0;
       } else {
         _primaryClickFlag = 1;
@@ -39,7 +39,7 @@ void Debouncer::debounce() {
 
 void Debouncer::_triggerPrimaryClick() {
   if (millis() - _lastPrimaryClickTime > CLICK_TIMEOUT && _primaryClickFlag != 0) {
-    Eventable::trigger(EVT_BTN_CLICK, 0);
+    Eventable::trigger(EVT_BTN_CLICK, NULL);
     _primaryClickFlag = 0;
   }
 }

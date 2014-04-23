@@ -18,20 +18,20 @@ enum EventType {
 //forward declare eventable type
 class Eventable;
 
-typedef void (Eventable::*memberPointer)();
+typedef void (Eventable::*memberPointer)(void *data);
 
 struct abstractCallback { 
- virtual void call() = 0;
+ virtual void call(void *data) = 0;
  virtual ~abstractCallback() {}
 };
 
 //see here for example
 //http://stackoverflow.com/questions/3381829/how-do-i-implement-a-callback-in-c
 struct EventableCallback : public abstractCallback {
- virtual void call() {((*destination).*member)(); }
- void (Eventable::*member)();
+ virtual void call(void *data) {((*destination).*member)(data); }
+ memberPointer member;
  Eventable *destination;
- EventableCallback(void (Eventable::*m)(), Eventable *p) : 
+ EventableCallback(memberPointer m, Eventable *p) : 
    member(m),
    destination(p)
  {}
@@ -43,7 +43,7 @@ struct EventableCallback : public abstractCallback {
 struct Event {
   EventType type;
   Eventable* source;
-  int data;
+  void *data;
 };
 
 struct Subscription {
@@ -65,10 +65,10 @@ class EventSequencer {
   public:
     EventSequencer(void);
     ~EventSequencer(void);
-    void bind(Eventable* source, EventType type, void (Eventable::*cb)(), Eventable* destination);
+    void bind(Eventable* source, EventType type, memberPointer cb, Eventable* destination);
     void unbind(Eventable* source, EventType type);
     void unbindAll(Eventable* source);
-    void trigger(Eventable* source, EventType type, int data);
+    void trigger(Eventable* source, EventType type, void *data);
     void consumeEvents();
     void clearEvents();
     void clearSubscriptions();
@@ -85,10 +85,10 @@ class Eventable {
   public:
     Eventable(EventSequencer* evSeq);
     virtual ~Eventable(void);
-    virtual void bind(EventType type, void (Eventable::*cb)());
+    virtual void bind(EventType type, memberPointer cb);
     virtual void unbind(EventType type);
     void unbindAll();
-    virtual void trigger(EventType type, int data);
+    virtual void trigger(EventType type, void *data);
   protected:
     EventSequencer* _evSeq;
   private:

@@ -15,7 +15,6 @@ F = (A * 48724 - 30634388) >> 16
 Temp::Temp(EventSequencer* evSeq) : Displayable(evSeq) {
   _scale = DEGREES_C;
   latestReading = 0;
-  analogReference(INTERNAL1V5);
   runningTotals[DEGREES_C] = 0;
   runningTotals[DEGREES_F] = 0;
   runningTotals[DEGREES_K] = 0;
