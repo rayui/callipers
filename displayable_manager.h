@@ -29,7 +29,7 @@ class DisplayableManager : public Eventable {
     void loadEncoder();
     void deleteTemp();
     void deleteEncoder();
-    void deleteRuler();
+    void deleteCurrent();
 };
 
 #endif

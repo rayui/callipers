@@ -12,10 +12,10 @@ DisplayableManager::~DisplayableManager(void) {
 }
 
 void DisplayableManager::loadTemp() {
-  _temp = new Temp(_evSeq);
-  _temp->bind(EVT_SECOND_TICK, (memberPointer)&Temp::updateReading);
-  _temp->bind(EVT_BTN_CLICK, (memberPointer)&Temp::toggleScale);
-  _current = (Displayable*)_temp;
+  _current = new Temp(_evSeq);
+  _current->bind(EVT_SECOND_TICK, (memberPointer)&Temp::updateReading);
+  _current->bind(EVT_BTN_CLICK, (memberPointer)&Temp::toggleScale);
+  _temp = (Temp*)_current;
   appId = 1;
 }
 
@@ -23,17 +23,15 @@ void DisplayableManager::deleteTemp() {
   if (_temp == 0) {
     return;
   }
-  _temp->unbind(EVT_SECOND_TICK);
-  _temp->unbind(EVT_BTN_CLICK);
   delete _temp;
   _temp = 0;
   _current = 0;
 }
 
 void DisplayableManager::loadEncoder() {
-  _enc = new Encoder(_evSeq);
-  _enc->bind(EVT_ENCODER, (memberPointer)&Encoder::updateReading);
-  _current = (Displayable*)_enc;
+  _current = new Encoder(_evSeq);
+  _current->bind(EVT_ENCODER, (memberPointer)&Encoder::updateReading);
+  _enc = (Encoder*)_current;
   appId = 0;
 }
 
@@ -41,9 +39,14 @@ void DisplayableManager::deleteEncoder() {
   if (_enc == 0) {
     return;
   }
-  _enc->unbind(EVT_ENCODER);
   delete _enc;
   _enc = 0;
+  _current = 0;
+}
+
+void DisplayableManager::deleteCurrent() {
+  _current->unbindAll();
+  delete _current;
   _current = 0;
 }
 
@@ -57,6 +60,8 @@ void DisplayableManager::loadNextApp() {
   deleteTemp();
   deleteEncoder();
 
+  //deleteCurrent();
+
   if (appId == 1) {
     loadEncoder();
   } else {
@@ -66,8 +71,8 @@ void DisplayableManager::loadNextApp() {
 }
 
 unsigned char DisplayableManager::getDPMask() {
-  if (_temp != 0) {
-    return _temp->getDPMask();    
+  if (_current != 0) {
+    return _current->getDPMask();    
   }
   
   return 0;

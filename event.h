@@ -18,32 +18,30 @@ enum EventType {
 //forward declare eventable type
 class Eventable;
 
-typedef void (Eventable::*memberPointer)(void *data);
+typedef void* evtArg;
+typedef void (Eventable::*memberPointer)(evtArg data);
 
 struct abstractCallback { 
- virtual void call(void *data) = 0;
+ virtual void call(evtArg data) = 0;
  virtual ~abstractCallback() {}
 };
 
 //see here for example
 //http://stackoverflow.com/questions/3381829/how-do-i-implement-a-callback-in-c
 struct EventableCallback : public abstractCallback {
- virtual void call(void *data) {((*destination).*member)(data); }
- memberPointer member;
- Eventable *destination;
- EventableCallback(memberPointer m, Eventable *p) : 
-   member(m),
-   destination(p)
- {}
- virtual ~EventableCallback() {
-
- }
+  memberPointer member;
+  Eventable *dest;
+  EventableCallback(memberPointer m, Eventable *p) : member(m), dest(p) {} 
+  virtual ~EventableCallback() {}
+  virtual void call(evtArg data) {
+    (dest->*member)(data);
+  }
 };
 
 struct Event {
   EventType type;
   Eventable* source;
-  void *data;
+  evtArg data;
 };
 
 struct Subscription {
@@ -68,7 +66,7 @@ class EventSequencer {
     void bind(Eventable* source, EventType type, memberPointer cb, Eventable* destination);
     void unbind(Eventable* source, EventType type);
     void unbindAll(Eventable* source);
-    void trigger(Eventable* source, EventType type, void *data);
+    void trigger(Eventable* source, EventType type, evtArg data);
     void consumeEvents();
     void clearEvents();
     void clearSubscriptions();
@@ -88,7 +86,7 @@ class Eventable {
     virtual void bind(EventType type, memberPointer cb);
     virtual void unbind(EventType type);
     void unbindAll();
-    virtual void trigger(EventType type, void *data);
+    virtual void trigger(EventType type, evtArg data);
   protected:
     EventSequencer* _evSeq;
   private:

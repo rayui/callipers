@@ -48,6 +48,7 @@ template <class Base> class List
     ListNode<Base>* _currentNode;
     ListNode<Base>* _getRoot(void);
     ListNode<Base>* _spliceNext(ListNode<Base>* node);
+    ListNode<Base>* _updateLastNode(void);
 };
 
 #include "list_impl.h"

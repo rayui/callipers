@@ -68,6 +68,9 @@ template <class Base> Base* List<Base>::spliceRoot() {
   } else {
     temp = _root;
     _root = _root->getNext();
+    if (_currentNode == temp) {
+      _currentNode = _root;
+    }
     delete temp;
   }
   
@@ -102,6 +105,8 @@ template <class Base> Base* List<Base>::spliceCurrent() {
       temp = temp->getNext();
     }
   }
+
+  _updateLastNode();
   
   return _currentNode->getNode();
 }
@@ -126,8 +131,10 @@ template <class Base> ListNode<Base>* List<Base>::_spliceNext(ListNode<Base>* no
       delete next;
     }
   }
+
+  _updateLastNode();
   
-  return node->getNext();
+  return node;
 }
 
 
@@ -194,6 +201,7 @@ template <class Base> void List<Base>::insertAtRoot(Base *node) {
 
   newNode->setNext(_root);
   _root = newNode;
+  _updateLastNode();
 
 }
 
@@ -272,3 +280,21 @@ template <class Base> Base* List<Base>::getLastNode() {
   
   return 0;
 }
+
+template <class Base> ListNode<Base>* List<Base>::_updateLastNode() {
+  ListNode<Base>* temp = _root;
+
+  if(temp == 0) {
+    return 0; 
+  }
+  
+  while(temp->getNext() != 0) {
+    temp = temp->getNext(); 
+  }
+ 
+  _lastNode = temp;
+ 
+  return temp;
+
+}
+

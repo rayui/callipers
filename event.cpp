@@ -21,20 +21,20 @@ void EventSequencer::bind(Eventable* source, EventType type, memberPointer cb, E
   newSub->source = source;
   newSub->type = type;
   newSub->addCallback(evCb);
-  _subscriptions.insertAtRoot(newSub);
+  _subscriptions.pushNode(newSub);
   
 }
 
 void EventSequencer::unbind(Eventable* source, EventType type) {
   Subscription* subscription = _subscriptions.moveToHead();
-  
+
   while(subscription != 0) {
     if (source == subscription->source && type == subscription->type) {
       _subscriptions.spliceCurrent();
     }
     subscription = _subscriptions.moveToNext();
   }
-  
+
 }
 
 
@@ -47,11 +47,11 @@ void EventSequencer::unbindAll(Eventable* source) {
     }
     subscription = _subscriptions.moveToNext();
   }
-  
+
 }
 
 
-void EventSequencer::trigger(Eventable* source, EventType type, void *data) {
+void EventSequencer::trigger(Eventable* source, EventType type, evtArg data) {
   if (_enabled == 0) {
     return;
   }
@@ -136,7 +136,7 @@ Eventable::Eventable (EventSequencer* evSeq) {
 }
 
 Eventable::~Eventable () {
-
+  unbindAll();
 }
 
 void Eventable::bind(EventType type, memberPointer cb) {
@@ -144,7 +144,7 @@ void Eventable::bind(EventType type, memberPointer cb) {
 }
 
 
-void Eventable::trigger(EventType type, void *data) {
+void Eventable::trigger(EventType type, evtArg data) {
   _evSeq->trigger(this, type, data);
 }
 

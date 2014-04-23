@@ -101,7 +101,7 @@ void SevenSegmentLED::strobeFourDigits(int number) {
   enableDisplay();
   
   for (i = 0; i < NUM_LED_DIGITS; i++) {
-    n = int(number / powf(10, NUM_LED_DIGITS - i - 1)) % 10;
+    n = int(number / Utils::power(10, NUM_LED_DIGITS - i - 1)) % 10;
     strobeSegment(i, n + 7);
   }
   

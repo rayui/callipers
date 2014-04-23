@@ -25,8 +25,13 @@ void Encoder::setScale(unsigned char scale) {
 }
 
 void Encoder::updateReading(long *step) {
+  int mmPos = 0;
   position += *step;
-  itoa(position, _displayString, 10);
+
+  mmPos = position * 254 / 275;
+  dpMask = 2;
+
+  itoa(mmPos, _displayString, 10);
   _displayString[_numDigits] = 0;
 }
 

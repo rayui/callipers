@@ -14,6 +14,8 @@
 #define MILLIMETRES_SYMBOL "mm"
 #define INCHES_SYMBOL "inch"
 
+#define ENCODER_DPI 275
+
 class Encoder : public Displayable
 {
   public:
