@@ -58,6 +58,7 @@ class SevenSegmentLED
 {
   public:
     SevenSegmentLED();
+    const static unsigned char characterMap[];
     void resetLeds();
     void enableDisplay();
     void disableDisplay();
@@ -70,7 +71,6 @@ class SevenSegmentLED
     int getStrobeRate();
     void setStrobeRate(int strobeRate);
   private:
-    const static unsigned char characterMap[];
     static unsigned char mapSize;
     unsigned char _digitPins[NUM_LED_DIGITS];
     unsigned char _brightness;

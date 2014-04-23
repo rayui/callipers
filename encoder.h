@@ -5,7 +5,7 @@
 #ifndef encoder_h
 #define encoder_h
 
-#include <Energia.h>
+#include "seven_segment_led.h"
 #include "displayable.h"
 
 #define MILLIMETRES 0

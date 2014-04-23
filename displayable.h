@@ -22,7 +22,7 @@ class Displayable : public Eventable {
     virtual unsigned char getDPMask();
   protected:
     int _numDigits;
-    char _displayString[NUM_LED_DIGITS + 1];
+    char _displayString[sizeof(long) * 8 + 1]; //enough to hold a long in binary format
     unsigned char _dpMask;
   private:
 };

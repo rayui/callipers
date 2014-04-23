@@ -181,6 +181,10 @@ void SevenSegmentLED::strobeString(char* displayString) {
     } else if (n >= 48 && n <= 57) {
       n -= 41;
     //unknown character
+    } else if (n == 45) {
+      n = 2;
+    } else if (n = 32) {
+      n = 0;
     } else {
       n = 6; //three lines
     }
