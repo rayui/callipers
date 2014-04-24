@@ -17,35 +17,52 @@ int Encoder::toString(char* output) {
 
 unsigned char Encoder::setDisplayString() {
   int dpPosition = 2;
-  int mmPos = 0;
+  int pos = 0;
   int offset = 0;
 
   //we multiply position by 254 instead of 25.4 because we want the extra digit of precision
   //compensate by moving decimal place forward
-  mmPos = position * 254 / 275;
 
-  if (abs(mmPos) < 10) {
+  if (_scale == CENTIMETRES) {
+    pos = (position * 25.4) / 275;
+  } else if (_scale == INCHES) {
+    pos = position * 10 / 275; 
+  } else {
+    pos = position * 254 / 275;
+  }
+
+  if (abs(pos) < 10) {
     offset = 3;
-  } else if (abs(mmPos) < 100) {
+  } else if (abs(pos) < 100) {
     offset = 2;
-  } else if (abs(mmPos) < 1000) {
+  } else if (abs(pos) < 1000) {
     offset = 1;
   }
 
   strncpy(_displayString, "    \0", _numDigits); 
 
-  if (mmPos < 0) {
+  if (pos < 0) {
     if (offset > 0) {
       offset -= 1;
     } else {
-      mmPos = abs(mmPos);
+      pos = abs(pos);
     }
   }
 
-  itoa(mmPos, _displayString + offset, 10);
+  itoa(pos, _displayString + offset * sizeof(char), 10);
   _displayString[_numDigits] = 0;
 
   return generateDPMask(dpPosition);
+}
+
+void Encoder::toggleScale() {
+  if (_scale == MILLIMETRES) {
+    setScale(CENTIMETRES);
+  } else if (_scale == CENTIMETRES) {
+    setScale(INCHES);
+  } else {
+    setScale(MILLIMETRES);
+  } 
 }
 
 void Encoder::setScale(unsigned char scale) {

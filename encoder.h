@@ -9,7 +9,8 @@
 #include "displayable.h"
 
 #define MILLIMETRES 0
-#define INCHES 1
+#define CENTIMETRES 1
+#define INCHES 2 
 
 #define MILLIMETRES_SYMBOL "mm"
 #define INCHES_SYMBOL "inch"

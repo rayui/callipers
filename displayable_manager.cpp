@@ -19,6 +19,7 @@ void DisplayableManager::loadTemp() {
 void DisplayableManager::loadEncoder() {
   _current = new Encoder(_evSeq);
   _current->bind(EVT_ENCODER, (memberPointer)&Encoder::updateReading);
+  _current->bind(EVT_BTN_CLICK, (memberPointer)&Encoder::toggleScale);
   appId = 0;
 }
 
